@@ -51,19 +51,17 @@ async function run() {
       const result = await serviceCollection.findOne(query, options);
       res.send(result);
     });
-    
+
     //get some data (from bookings)
-      app.get("/bookings", async (req, res) => { 
+    app.get("/bookings", async (req, res) => {
       console.log(req.query.email);
-      let query = {}
-      if(req.query?.email){
-        query = {email : req.query.email}
+      let query = {};
+      if (req.query?.email) {
+        query = { email: req.query.email };
       }
-        const result = await bookingCollection.find(query).toArray();
-        res.send(result);
-      })
-
-
+      const result = await bookingCollection.find(query).toArray();
+      res.send(result);
+    });
 
     //bookings (insert)
     app.post("/bookings", async (req, res) => {
@@ -72,16 +70,29 @@ async function run() {
       const result = await bookingCollection.insertOne(booking);
       res.send(result);
     });
-    
+
+    //for update bookings items
+    app.patch("/bookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateBooking = req.body;
+      console.log(updateBooking);
+      const updateDoc = {
+        $set: {
+          status: updateBooking.status,
+        },
+      };
+      const result = await bookingCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
     //delete for booking
-    app.delete('/bookings/:id', async(req, res) => {
-        const id = req.params.id;
-        const query = { _id: new ObjectId(id) };
-        const result = await bookingCollection.deleteOne(query);
-        res.send(result);
-    })
-    
-    
+    app.delete("/bookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await bookingCollection.deleteOne(query);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
@@ -102,3 +113,7 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`Car doctor is running on port ${port}`);
 });
+
+
+
+
